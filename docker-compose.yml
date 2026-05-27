@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  redis-dev:
+    image: redis:7.2-alpine
+    container_name: redis_architect_dev
+    command: redis-server --appendonly yes --requirepass TopSecretDevPass123!
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/Users/balaji/my-docker-volume/playgroud
+    networks:
+      - redis_network
+
+volumes:
+  redis_data:
+
+networks:
+  redis_network:
