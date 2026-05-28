@@ -24,3 +24,24 @@ class RedisCacheManager:
         except RedisError as e:
             print(f"Database connection failed: {e}")
             return False
+        
+    def set_value(self, key, value):
+        """Safely write a string value to Redis."""
+        try:
+            # We use the internal client to execute the standard SET command
+            self.client.set(key, value)
+            print(f"Successfully set key: {key}")
+            return True
+        except RedisError as e:
+            print(f"Production Error during SET: {e}")
+            return False
+
+    def get_value(self, key):
+        """Safely read a string value from Redis."""
+        try:
+            # We use the internal client to execute the standard GET command
+            value = self.client.get(key)
+            return value
+        except RedisError as e:
+            print(f"Production Error during GET: {e}")
+            return None
