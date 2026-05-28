@@ -1,17 +1,12 @@
-import redis
+from redis_utility import RedisCacheManager
 
-# Connect to the Redis container
-client = redis.Redis(
-    host='localhost',
-    port=6379,
-    password='TopSecretDevPass123!',  # Use the password we set up
-    decode_responses=True             # This makes Redis return normal strings instead of bytes
-)
-
-# Test the connection
-try:
-    print("Connecting to Redis...")
-    response = client.ping()
-    print(f"Connected! Server responded: {response}")
-except Exception as e:
-    print(f"Could not connect: {e}")
+# Testing our class setup
+if __name__ == "__main__":
+    # Create the manager object
+    manager = RedisCacheManager(host='localhost', port=6379, password='TopSecretDevPass123!')
+    
+    # Test the connection
+    if manager.ping_server():
+        print("Success: Manager is ready for production actions!")
+    else:
+        print("Failure: Check your connection settings.")
