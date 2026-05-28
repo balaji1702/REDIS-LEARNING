@@ -66,3 +66,24 @@ class RedisCacheManager:
         except RedisError as e:
             print(f"Production Error during HGETALL: {e}")
             return None
+        
+    def push_to_queue(self, queue_name, item):
+        """Safely push a new item onto the end of a queue."""
+        try:
+            # rpush adds the item to the right side of the list
+            self.client.rpush(queue_name, item)
+            print(f"Pushed item into queue '{queue_name}': {item}")
+            return True
+        except RedisError as e:
+            print(f"Production Error during RPUSH: {e}")
+            return False
+
+    def pop_from_queue(self, queue_name):
+        """Safely pull and remove the oldest item from the front of the queue."""
+        try:
+            # lpop removes and returns the leftmost item
+            item = self.client.lpop(queue_name)
+            return item  # This will be None if the queue is empty
+        except RedisError as e:
+            print(f"Production Error during LPOP: {e}")
+            return None
