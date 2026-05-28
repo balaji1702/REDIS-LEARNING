@@ -25,11 +25,11 @@ class RedisCacheManager:
             print(f"Database connection failed: {e}")
             return False
         
-    def set_value(self, key, value):
+    def set_value(self, key, value , expire_seconds=None) :
         """Safely write a string value to Redis."""
         try:
             # We use the internal client to execute the standard SET command
-            self.client.set(key, value)
+            self.client.set(key, value , ex=expire_seconds)  # ex sets an expiration time in seconds
             print(f"Successfully set key: {key}")
             return True
         except RedisError as e:
@@ -44,4 +44,25 @@ class RedisCacheManager:
             return value
         except RedisError as e:
             print(f"Production Error during GET: {e}")
+            return None
+        
+    def set_hash(self, key, dictionary_data):
+        """Safely store a Python dictionary as a Redis Hash."""
+        try:
+            # 'mapping' takes a standard Python dict and saves it as key-value fields
+            self.client.hset(key, mapping=dictionary_data)
+            print(f"Successfully saved Hash: {key}")
+            return True
+        except RedisError as e:
+            print(f"Production Error during HSET: {e}")
+            return False
+
+    def get_hash(self, key):
+        """Safely retrieve an entire Redis Hash as a Python dictionary."""
+        try:
+            # hgetall returns a dictionary of all fields and values inside the hash
+            data = self.client.hgetall(key)
+            return data if data else None
+        except RedisError as e:
+            print(f"Production Error during HGETALL: {e}")
             return None
