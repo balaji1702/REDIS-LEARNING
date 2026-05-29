@@ -87,3 +87,55 @@ class RedisCacheManager:
         except RedisError as e:
             print(f"Production Error during LPOP: {e}")
             return None
+        
+    def add_to_set(self, set_key, item):
+        """Safely add an item to a Set. Returns True if it's a new item."""
+        try:
+            # sadd returns the number of new elements successfully added
+            result = self.client.sadd(set_key, item)
+            if result > 0:
+                print(f"Added new member to set '{set_key}': {item}")
+                return True
+            else:
+                print(f"Ignored duplicate member in set '{set_key}': {item}")
+                return False
+        except RedisError as e:
+            print(f"Production Error during SADD: {e}")
+            return False
+
+    def get_set_members(self, set_key):
+        """Safely retrieve all unique items from a Set."""
+        try:
+            # smembers returns a Python set containing all items
+            members = self.client.smembers(set_key)
+            return members if members else set()
+        except RedisError as e:
+            print(f"Production Error during SMEMBERS: {e}")
+            return set()
+        
+    def update_score(self, leaderboard_name, member, score):
+        """Safely add or update a member's score in a Sorted Set."""
+        try:
+            # zadd takes a Python dictionary mapping {member_name: score}
+            self.client.zadd(leaderboard_name, {member: score})
+            print(f"Updated score for '{member}' in '{leaderboard_name}' to {score}")
+            return True
+        except RedisError as e:
+            print(f"Production Error during ZADD: {e}")
+            return False
+
+    def get_top_rankings(self, leaderboard_name, top_n=10):
+        """Safely retrieve the top N highest-scoring members with their scores."""
+        try:
+            # zrevrange fetches items from highest to lowest score
+            # 0 is the first item, (top_n - 1) gives us exactly N items
+            rankings = self.client.zrevrange(
+                leaderboard_name, 
+                0, 
+                top_n - 1, 
+                withscores=True
+            )
+            return rankings
+        except RedisError as e:
+            print(f"Production Error during ZREVRANGE: {e}")
+            return []
